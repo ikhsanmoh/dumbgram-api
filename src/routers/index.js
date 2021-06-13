@@ -7,10 +7,12 @@ const {
   deleteUser, getFollowers,
   getFollowing,
 } = require('../controllers/user')
+const { registration } = require('../controllers/auth')
 
 const { auth } = require('../middleware/auth')
 
 // User Endpoint
+router.post('/register', registration)
 router.get('/users', getUsers)
 router.patch('/user/:id', auth, updateUser)
 router.put('/user/:id', auth, updateUser)
