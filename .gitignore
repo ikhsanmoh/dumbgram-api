@@ -10,3 +10,6 @@
 # Ignore all local history of files
 .history
 .ionide
+
+### Temp ignored ###
+/src/controllers/auth.js
