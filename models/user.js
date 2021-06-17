@@ -16,7 +16,25 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: {
           name: 'followerId'
         }
-      })
+      }),
+        User.hasMany(models.followed_user, {
+          as: 'user_followers',
+          foreignKey: {
+            name: 'followedId'
+          }
+        }),
+        User.hasMany(models.feed, {
+          as: 'feeds',
+          foreignKey: {
+            name: 'userId'
+          }
+        }),
+        User.hasMany(models.comment, {
+          // Use default alias
+          foreignKey: {
+            name: 'userId'
+          }
+        })
     }
   };
   User.init({

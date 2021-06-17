@@ -1,13 +1,12 @@
 const { user: User } = require('../../models')
 const joi = require('joi')
 const jwt = require('jsonwebtoken')
+const bcrypt = require('bcrypt')
 
 exports.registration = async (req, res) => {
   try {
     const { email } = req.body
     const data = req.body
-
-    console.log("--request body", data)
 
     const schema = joi.object({
       fullName: joi.string().min(6).required(),
@@ -40,11 +39,14 @@ exports.registration = async (req, res) => {
       })
     }
 
+    const hashStrenght = 10
+    const hashedPass = await bcrypt.hash(data.password, hashStrenght)
+
     const insertData = await User.create({
       fullName: data.fullName,
       email: data.email,
       username: data.username,
-      password: data.password,
+      password: hashedPass,
       createdAt: new Date(),
       updatedAt: new Date()
     })
@@ -98,13 +100,17 @@ exports.login = async (req, res) => {
       }
     })
 
-    const passwordValidation = await User.findOne({
-      where: {
-        password
-      }
-    })
 
-    if (!emailValidation || !passwordValidation) {
+    if (!emailValidation) {
+      return res.send({
+        status: 'failed',
+        message: 'Invalid Email or Password!'
+      })
+    }
+
+    const passwordValidation = await bcrypt.compare(password, emailValidation.password)
+
+    if (!passwordValidation) {
       return res.send({
         status: 'failed',
         message: 'Invalid Email or Password!'

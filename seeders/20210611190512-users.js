@@ -1,3 +1,6 @@
+const bcrypt = require('bcrypt')
+const hashStrenght = 10
+
 'use strict';
 
 module.exports = {
@@ -16,7 +19,7 @@ module.exports = {
         fullName: 'Ronaldo',
         email: 'ronaldo@app.com',
         username: 'ranaldo7',
-        password: '77777777',
+        password: await bcrypt.hash('77777777', hashStrenght),
         image: 'ronaldo.jpg',
         bio: "Just a football player who likes to score.",
         createdAt: new Date(),
@@ -25,7 +28,7 @@ module.exports = {
       {
         fullName: 'Messi',
         email: 'messi@app.com',
-        password: '10101010',
+        password: await bcrypt.hash('10101010', hashStrenght),
         username: 'messi10',
         image: 'messi.jpg',
         bio: "Just a football player who likes to dribble.",
@@ -36,7 +39,7 @@ module.exports = {
         fullName: 'Neymar',
         email: 'neymar@app.com',
         username: 'neymar11',
-        password: '11111111',
+        password: await bcrypt.hash('11111111', hashStrenght),
         image: 'neymar.jpg',
         bio: "Just a football player who likes to dive.",
         createdAt: new Date(),
@@ -46,7 +49,7 @@ module.exports = {
         fullName: 'Fabregas',
         email: 'fabregas@app.com',
         username: 'fabregas4',
-        password: '44444444',
+        password: await bcrypt.hash('44444444', hashStrenght),
         image: 'fabregas.jpg',
         bio: "Just a football player who likes to pass the ball",
         createdAt: new Date(),
@@ -56,7 +59,7 @@ module.exports = {
         fullName: 'Ramos',
         email: 'ramosamos@app.com',
         username: 'ramos4',
-        password: '44444444',
+        password: await bcrypt.hash('44444444', hashStrenght),
         image: 'ramos.jpg',
         bio: "Just a football player who likes to provoke.",
         createdAt: new Date(),

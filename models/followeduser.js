@@ -23,6 +23,16 @@ module.exports = (sequelize, DataTypes) => {
             name: 'followerId'
           }
         })
+      // FollowedUser.belongsToMany(models.user, {
+      //   as: 'user_followers',
+      //   through: {
+      //     model: 'userd',
+      //     as: 'conjunction'
+      //   },
+      //   foreignKey: {
+      //     name: 'followerId'
+      //   }
+      // })
     }
   };
   FollowedUser.init({
