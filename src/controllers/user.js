@@ -1,18 +1,18 @@
-const { user: User, followed_user: FollowedUser } = require('../../models')
+const { user: User, follower: Follower } = require('../../models')
 
 exports.getUsers = async (req, res) => {
   try {
-    const users = await User.findAll({
+    User.findAll({
       attributes: {
         exclude: ['password', 'createdAt', 'updatedAt']
       }
-    })
-
-    res.send({
-      status: 'success',
-      data: {
-        users
-      }
+    }).then(users => {
+      res.send({
+        status: 'success',
+        data: {
+          users
+        }
+      })
     })
   } catch (e) {
     console.log(e)
@@ -26,7 +26,14 @@ exports.getUsers = async (req, res) => {
 exports.updateUser = async (req, res) => {
   try {
     const id = +req.params.id
-    const body = req.body
+    const { body } = req
+
+    if (!id) {
+      return res.send({
+        status: 'failed',
+        message: 'ID parameter cannot be empty!'
+      })
+    }
 
     const userIsExists = await User.findOne({
       where: { id }
@@ -39,23 +46,24 @@ exports.updateUser = async (req, res) => {
       })
     }
 
-    await User.update(body, {
+    User.update(body, {
       where: { id }
+    }).then(() => {
+      User.findOne({
+        attributes: {
+          exclude: ['password', 'createdAt', 'updatedAt']
+        },
+        where: { id }
+      }).then(result => {
+        res.send({
+          status: 'success',
+          data: {
+            user: result
+          }
+        })
+      })
     })
 
-    const updatedData = await User.findOne({
-      attributes: {
-        exclude: ['createdAt', 'updatedAt']
-      },
-      where: { id }
-    })
-
-    res.send({
-      status: 'success',
-      data: {
-        user: updatedData
-      }
-    })
   } catch (e) {
     console.log(e)
     res.status({
@@ -68,6 +76,13 @@ exports.updateUser = async (req, res) => {
 exports.deleteUser = async (req, res) => {
   try {
     const id = +req.params.id
+
+    if (!id) {
+      return res.send({
+        status: 'failed',
+        message: 'ID parameter cannot be empty!'
+      })
+    }
 
     const userIsExists = await User.findOne({
       where: { id }
@@ -84,7 +99,7 @@ exports.deleteUser = async (req, res) => {
       where: { id }
     })
 
-    return res.send({
+    res.send({
       status: "success",
       data: { id }
     })
@@ -101,6 +116,13 @@ exports.getFollowers = async (req, res) => {
   try {
     const id = +req.params.id
 
+    if (!id) {
+      return res.send({
+        status: 'failed',
+        message: 'ID parameter cannot be empty!'
+      })
+    }
+
     const userIsExists = await User.findOne({
       where: { id }
     })
@@ -112,14 +134,13 @@ exports.getFollowers = async (req, res) => {
       })
     }
 
-    // Get the user Followers by given Id
-    const followers = await FollowedUser.findAll({
+    // Get the user Follower by given Id
+    const followers = await Follower.findAll({
       where: { followedId: id },
       include: {
         model: User,
-        as: 'user',
         attributes: {
-          exclude: ['email', 'bio', 'createdAt', 'updatedAt']
+          exclude: ['email', 'password', 'bio', 'createdAt', 'updatedAt']
         }
       },
       attributes: {
@@ -146,6 +167,13 @@ exports.getFollowing = async (req, res) => {
   try {
     const id = +req.params.id
 
+    if (!id) {
+      return res.send({
+        status: 'failed',
+        message: 'ID parameter cannot be empty!'
+      })
+    }
+
     const userIsExists = await User.findOne({
       where: { id }
     })
@@ -158,13 +186,13 @@ exports.getFollowing = async (req, res) => {
     }
 
     // Get the followed users by given Id
-    const following = await FollowedUser.findAll({
+    const following = await Follower.findAll({
       where: { followerId: id },
       include: {
         model: User,
         as: 'usr',
         attributes: {
-          exclude: ['email', 'bio', 'createdAt', 'updatedAt']
+          exclude: ['email', 'password', 'bio', 'createdAt', 'updatedAt']
         }
       },
       attributes: {

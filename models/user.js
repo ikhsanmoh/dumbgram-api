@@ -11,14 +11,14 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      User.hasMany(models.followed_user, {
-        as: 'followed_users',
+      User.hasMany(models.follower, {
+        as: 'followers',
         foreignKey: {
           name: 'followerId'
         }
       }),
-        User.hasMany(models.followed_user, {
-          as: 'user_followers',
+        User.hasMany(models.follower, {
+          as: 'followed_users',
           foreignKey: {
             name: 'followedId'
           }

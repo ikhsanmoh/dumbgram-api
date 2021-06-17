@@ -11,7 +11,7 @@ module.exports = {
      *   isBetaMember: false
      * }], {});
     */
-    await queryInterface.bulkInsert('followed_users', [
+    await queryInterface.bulkInsert('followers', [
       {
         followerId: 1,
         followedId: 2,

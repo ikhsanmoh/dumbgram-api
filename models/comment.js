@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       Comment.belongsTo(models.feed, {
-        as: 'feed_comment',
+        // Use default alias
         foreignKey: {
           name: 'feedId'
         }

@@ -61,7 +61,7 @@ module.exports = {
         username: 'ramos4',
         password: await bcrypt.hash('44444444', hashStrenght),
         image: 'ramos.jpg',
-        bio: "Just a football player who likes to provoke.",
+        bio: "Just a football player who likes to tackle.",
         createdAt: new Date(),
         updatedAt: new Date()
       }

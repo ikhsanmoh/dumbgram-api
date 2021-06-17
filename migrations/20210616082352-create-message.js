@@ -1,15 +1,15 @@
 'use strict';
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable('feeds', {
+    await queryInterface.createTable('messages', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      userId: {
-        allowNull: false,
+      senderId: {
+        allowNull: true,
         type: Sequelize.INTEGER,
         references: {
           model: 'users',
@@ -18,12 +18,18 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
-      fileName: {
-        allowNull: false,
-        type: Sequelize.STRING
-      },
-      caption: {
+      receiverId: {
         allowNull: true,
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'users',
+          key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
+      },
+      message: {
+        allowNull: false,
         type: Sequelize.STRING
       },
       createdAt: {
@@ -37,6 +43,6 @@ module.exports = {
     });
   },
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('feeds');
+    await queryInterface.dropTable('messages');
   }
 };

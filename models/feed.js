@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       Feed.belongsTo(models.user, {
-        as: 'user',
+        // Use default alias
         foreignKey: {
           name: 'userId'
         }
@@ -24,7 +24,6 @@ module.exports = (sequelize, DataTypes) => {
           }
         }),
         Feed.hasMany(models.like, {
-          // as: 'comments',
           foreignKey: {
             name: 'feedId'
           }

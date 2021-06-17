@@ -5,8 +5,7 @@ const bcrypt = require('bcrypt')
 
 exports.registration = async (req, res) => {
   try {
-    const { email } = req.body
-    const data = req.body
+    const { body } = req
 
     const schema = joi.object({
       fullName: joi.string().min(6).required(),
@@ -15,7 +14,7 @@ exports.registration = async (req, res) => {
       password: joi.string().min(8).required()
     })
 
-    const { error } = schema.validate(data)
+    const { error } = schema.validate(body)
 
     if (error) {
       return res.send({
@@ -26,11 +25,9 @@ exports.registration = async (req, res) => {
 
     const emailValidation = await User.findOne({
       where: {
-        email
+        email: body.email
       }
     })
-
-    console.log(emailValidation)
 
     if (emailValidation) {
       return res.send({
@@ -40,32 +37,37 @@ exports.registration = async (req, res) => {
     }
 
     const hashStrenght = 10
-    const hashedPass = await bcrypt.hash(data.password, hashStrenght)
+    const hashedPass = await bcrypt.hash(body.password, hashStrenght)
 
-    const insertData = await User.create({
-      fullName: data.fullName,
-      email: data.email,
-      username: data.username,
+    User.create({
+      fullName: body.fullName,
+      email: body.email,
+      username: body.username,
       password: hashedPass,
       createdAt: new Date(),
       updatedAt: new Date()
-    })
+    }).then(result => {
+      const accessToken = jwt.sign({
+        id: result.id
+      }, process.env.SECRET_KEY)
 
-    const accessToken = jwt.sign({
-      id: insertData.id
-    }, process.env.SECRET_KEY)
-
-    res.send({
-      status: 'success',
-      data: {
-        user: {
-          fullName: insertData.fullName,
-          username: insertData.username,
-          token: accessToken
+      return res.send({
+        status: 'success',
+        data: {
+          user: {
+            fullName: result.fullName,
+            username: result.username,
+            token: accessToken
+          }
         }
-      }
+      })
+    }).catch(err => {
+      res.send({
+        status: 'failed',
+        message: 'Error on create new data!',
+        errLog: err
+      })
     })
-
   } catch (e) {
     console.log(e)
     res.status({
@@ -77,15 +79,14 @@ exports.registration = async (req, res) => {
 
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body
-    const data = req.body
+    const { body } = req
 
     const schema = joi.object({
-      email: joi.string().email().min(8).required(),
+      email: joi.string().email().min(6).required(),
       password: joi.string().min(8).required()
     })
 
-    const { error } = schema.validate(data)
+    const { error } = schema.validate(body)
 
     if (error) {
       return res.send({
@@ -96,10 +97,9 @@ exports.login = async (req, res) => {
 
     const emailValidation = await User.findOne({
       where: {
-        email
+        email: body.email
       }
     })
-
 
     if (!emailValidation) {
       return res.send({
@@ -108,7 +108,7 @@ exports.login = async (req, res) => {
       })
     }
 
-    const passwordValidation = await bcrypt.compare(password, emailValidation.password)
+    const passwordValidation = await bcrypt.compare(body.password, emailValidation.password)
 
     if (!passwordValidation) {
       return res.send({
@@ -132,7 +132,6 @@ exports.login = async (req, res) => {
         }
       }
     })
-
   } catch (e) {
     console.log(e)
     res.status({

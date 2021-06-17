@@ -25,6 +25,12 @@ const {
   addComment
 } = require('../controllers/feed')
 
+// Messages Controller
+const {
+  addMessage,
+  getMessages
+} = require('../controllers/message')
+
 const { auth } = require('../middleware/auth')
 
 // Auth Endpoint
@@ -46,5 +52,9 @@ router.post('/like', auth, addLike)
 router.get('/feed/:id', getFollowedFeeds)
 router.get('/comments/:id', auth, getComments)
 router.post('/comment', auth, addComment)
+
+// Messages Endpoint
+router.post('/message/:id', auth, addMessage)
+router.get('/message-user/:id', auth, getMessages)
 
 module.exports = router

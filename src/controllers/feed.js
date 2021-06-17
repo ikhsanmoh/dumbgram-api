@@ -2,31 +2,44 @@ const {
   user: User,
   feed: Feed,
   comment: Comment,
-  followed_user: FollowedUser,
+  follower: Follower,
   like: Like
 } = require('../../models')
 
+const joi = require('joi')
 const sequelize = require('sequelize')
 
 exports.createFeed = async (req, res) => {
   try {
-    const { image, caption } = req.body
+    const { body } = req
     const { idUser } = req.authData
 
-    const createdData = await Feed.create({
+    const schema = joi.object({
+      image: joi.string().min(5).required(),
+      caption: joi.required()
+    })
+
+    const { error } = schema.validate(body)
+
+    if (error) {
+      return res.send({
+        status: 'invalid',
+        message: error.details[0].message
+      })
+    }
+
+    const createFeed = await Feed.create({
       userId: idUser,
-      fileName: image,
-      caption: caption,
-      like: 0,
+      fileName: body.image,
+      caption: body.caption,
       createdAt: new Date(),
       updatedAt: new Date()
     })
 
-    const userFeeds = await Feed.findOne({
-      where: { id: createdData.id },
+    const newFeed = await Feed.findOne({
+      where: { id: createFeed.id },
       include: {
         model: User,
-        as: 'user',
         attributes: {
           exclude: ['email', 'password', 'bio', 'createdAt', 'updatedAt']
         }
@@ -39,10 +52,9 @@ exports.createFeed = async (req, res) => {
     res.send({
       status: 'success',
       data: {
-        feed: userFeeds
+        feed: newFeed
       }
     })
-
   } catch (e) {
     console.log(e)
     res.status({
@@ -55,6 +67,13 @@ exports.createFeed = async (req, res) => {
 exports.getFollowedFeeds = async (req, res) => {
   try {
     const followerId = +req.params.id
+
+    if (!followerId) {
+      return res.send({
+        status: 'failed',
+        message: 'ID parameter required!'
+      })
+    }
 
     const userIsExists = await User.findOne({
       where: { id: followerId }
@@ -71,19 +90,17 @@ exports.getFollowedFeeds = async (req, res) => {
       include: [
         {
           model: Like,
-          as: 'likes',
           attributes: []
         },
         {
           model: User,
-          as: 'user',
           required: true,
           attributes: {
             exclude: ['createdAt', 'updatedAt']
           },
           include: {
-            model: FollowedUser,
-            as: 'user_followers',
+            model: Follower,
+            as: 'followed_users',
             where: { followerId },
             attributes: []
           },
@@ -91,6 +108,45 @@ exports.getFollowedFeeds = async (req, res) => {
             exclude: ['email', 'password', 'bio', 'createdAt', 'updatedAt']
           }
         }],
+      attributes: {
+        include: [
+          [sequelize.fn('COUNT', sequelize.col('likes.id')), 'like'],
+        ],
+        exclude: ['userId', 'createdAt', 'updatedAt']
+      },
+      group: 'id'
+    })
+
+    res.send({
+      status: 'success',
+      data: {
+        feeds
+      }
+    })
+  } catch (e) {
+    console.log(e)
+    res.status({
+      status: "failed",
+      message: "Server Error"
+    })
+  }
+}
+
+exports.getFeeds = async (req, res) => {
+  try {
+    const feeds = await Feed.findAll({
+      include: [
+        {
+          model: Like,
+          attributes: []
+        },
+        {
+          model: User,
+          attributes: {
+            exclude: ['email', 'password', 'bio', 'createdAt', 'updatedAt']
+          }
+        }
+      ],
       attributes: {
         include: [
           [sequelize.fn('COUNT', sequelize.col('likes.id')), 'like'],
@@ -116,65 +172,23 @@ exports.getFollowedFeeds = async (req, res) => {
   }
 }
 
-exports.getFeeds = async (req, res) => {
-  try {
-    const getData = await Feed.findAll({
-      include: [
-        {
-          model: Like,
-          as: 'likes',
-          attributes: []
-        },
-        {
-          model: User,
-          as: 'user',
-          attributes: {
-            exclude: ['email', 'password', 'bio', 'createdAt', 'updatedAt']
-          }
-        }
-      ],
-      attributes: {
-        include: [
-          [sequelize.fn('COUNT', sequelize.col('likes.id')), 'like'],
-        ],
-        exclude: ['userId', 'createdAt', 'updatedAt']
-      },
-      group: 'id'
-    })
-
-    res.send({
-      status: 'success',
-      data: {
-        feeds: getData
-      }
-    })
-
-  } catch (e) {
-    console.log(e)
-    res.status({
-      status: "failed",
-      message: "Server Error"
-    })
-  }
-}
-
 exports.addLike = async (req, res) => {
   try {
     const feedId = +req.body.id
     const { idUser: userId } = req.authData
 
-    if (feedId == null) {
+    if (!feedId) {
       return res.send({
         status: 'failed',
-        message: `Feed with ID: ${feedId} is Not Found`
+        message: 'ID parameter required!'
       })
     }
 
-    const postIsExists = await Feed.findOne({
+    const feedIsExists = await Feed.findOne({
       where: { id: feedId }
     })
 
-    if (!postIsExists) {
+    if (!feedIsExists) {
       return res.send({
         status: 'failed',
         message: `Feed with ID: ${feedId} is Not Found`
@@ -232,6 +246,13 @@ exports.getComments = async (req, res) => {
     const feedId = +req.params.id
     const { idUser: userId } = req.authData
 
+    if (!feedId) {
+      return res.send({
+        status: 'failed',
+        message: 'ID parameter required!'
+      })
+    }
+
     const feedIsExist = await Feed.findOne({
       where: { id: feedId }
     })
@@ -275,54 +296,48 @@ exports.getComments = async (req, res) => {
 
 exports.addComment = async (req, res) => {
   try {
-    const { id_feed: feedId, comment } = req.body
+    const { body } = req
     const { idUser: userId } = req.authData
 
-    if (!feedId) {
-      return res.send({
-        status: 'failed',
-        message: `Feed ID is required.`
-      })
-    }
+    const schema = joi.object({
+      id_feed: joi.number().required(),
+      comment: joi.string().required()
+    })
 
-    if (!comment) {
+    const { error } = schema.validate(body)
+
+    if (error) {
       return res.send({
-        status: 'failed',
-        message: 'Comment connot be empty.'
+        status: 'invalid',
+        message: error.details[0].message
       })
     }
 
     const feedIsExists = await Feed.findOne({
-      where: { id: feedId }
+      where: { id: body.id_feed }
     })
 
     if (!feedIsExists) {
       return res.send({
         status: 'failed',
-        message: `Feed with ID: ${feedId} is Not Found`
+        message: `Feed with ID: ${body.id_feed} is Not Found`
       })
     }
 
-    Comment.create({
+    const addNewComment = await Comment.create({
       userId,
-      feedId,
-      comment,
+      feedId: body.id_feed,
+      comment: body.comment,
       createdAt: new Date(),
       updatedAt: new Date()
-    }).then(result => {
-      return res.send({
-        status: 'success',
-        data: {
-          comment: { id: result.id }
-        }
-      })
-    }).catch(err => {
-      return res.send({
-        status: 'failed',
-        message: 'Cannot create comment.',
-        errLog: err
-      })
-    });
+    })
+
+    res.send({
+      status: 'success',
+      data: {
+        comment: { id: addNewComment.id }
+      }
+    })
   } catch (e) {
     console.log(e)
     res.status({

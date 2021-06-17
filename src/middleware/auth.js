@@ -8,7 +8,7 @@ exports.auth = (req, res, next) => {
     if (token == null) {
       return res.send({
         status: 'failed',
-        message: 'Access Denied!'
+        message: 'Access Denied.'
       })
     }
 
@@ -16,7 +16,7 @@ exports.auth = (req, res, next) => {
       if (err) {
         return res.send({
           status: 'failed',
-          message: 'Invalid Token'
+          message: 'Invalid Token.'
         })
       } else {
         req.authData = {
