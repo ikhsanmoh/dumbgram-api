@@ -17,7 +17,7 @@ exports.registration = async (req, res) => {
     const { error } = schema.validate(body)
 
     if (error) {
-      return res.send({
+      return res.status(422).send({
         status: 'invalid',
         message: error.details[0].message
       })
@@ -30,7 +30,7 @@ exports.registration = async (req, res) => {
     })
 
     if (emailValidation) {
-      return res.send({
+      return res.status(409).send({
         status: 'failed',
         message: 'Email already registered'
       })
@@ -39,38 +39,32 @@ exports.registration = async (req, res) => {
     const hashStrenght = 10
     const hashedPass = await bcrypt.hash(body.password, hashStrenght)
 
-    User.create({
+    const newUser = await User.create({
       fullName: body.fullName,
       email: body.email,
       username: body.username,
       password: hashedPass,
       createdAt: new Date(),
       updatedAt: new Date()
-    }).then(result => {
-      const accessToken = jwt.sign({
-        id: result.id
-      }, process.env.SECRET_KEY)
+    })
 
-      return res.send({
-        status: 'success',
-        data: {
-          user: {
-            fullName: result.fullName,
-            username: result.username,
-            token: accessToken
-          }
+    const accessToken = jwt.sign({
+      id: newUser.id
+    }, process.env.SECRET_KEY)
+
+    res.send({
+      status: 'success',
+      data: {
+        user: {
+          fullName: newUser.fullName,
+          username: newUser.username,
+          token: accessToken
         }
-      })
-    }).catch(err => {
-      res.send({
-        status: 'failed',
-        message: 'Error on create new data!',
-        errLog: err
-      })
+      }
     })
   } catch (e) {
     console.log(e)
-    res.status({
+    res.status(500).send({
       status: "failed",
       message: "Server Error"
     })
@@ -89,7 +83,7 @@ exports.login = async (req, res) => {
     const { error } = schema.validate(body)
 
     if (error) {
-      return res.send({
+      return res.status(422).send({
         status: 'invalid',
         message: error.details[0].message
       })
@@ -102,7 +96,7 @@ exports.login = async (req, res) => {
     })
 
     if (!emailValidation) {
-      return res.send({
+      return res.status(404).send({
         status: 'failed',
         message: 'Invalid Email or Password!'
       })
@@ -111,7 +105,7 @@ exports.login = async (req, res) => {
     const passwordValidation = await bcrypt.compare(body.password, emailValidation.password)
 
     if (!passwordValidation) {
-      return res.send({
+      return res.status(404).send({
         status: 'failed',
         message: 'Invalid Email or Password!'
       })
@@ -134,7 +128,7 @@ exports.login = async (req, res) => {
     })
   } catch (e) {
     console.log(e)
-    res.status({
+    res.status(500).send({
       status: "failed",
       message: "Server Error"
     })

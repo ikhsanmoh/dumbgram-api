@@ -6,7 +6,7 @@ exports.auth = (req, res, next) => {
     const token = authHeader && authHeader.split(' ')[1]
 
     if (token == null) {
-      return res.send({
+      return res.status(401).send({
         status: 'failed',
         message: 'Access Denied.'
       })
@@ -14,7 +14,7 @@ exports.auth = (req, res, next) => {
 
     jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
       if (err) {
-        return res.send({
+        return res.status(401).send({
           status: 'failed',
           message: 'Invalid Token.'
         })
@@ -29,7 +29,7 @@ exports.auth = (req, res, next) => {
 
   } catch (e) {
     console.log(e)
-    res.status({
+    res.status(500).send({
       status: "failed",
       message: "Server Error"
     })

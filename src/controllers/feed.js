@@ -22,7 +22,7 @@ exports.createFeed = async (req, res) => {
     const { error } = schema.validate(body)
 
     if (error) {
-      return res.send({
+      return res.status(422).send({
         status: 'invalid',
         message: error.details[0].message
       })
@@ -57,7 +57,7 @@ exports.createFeed = async (req, res) => {
     })
   } catch (e) {
     console.log(e)
-    res.status({
+    res.status(500).send({
       status: "failed",
       message: "Server Error"
     })
@@ -69,7 +69,7 @@ exports.getFollowedFeeds = async (req, res) => {
     const followerId = +req.params.id
 
     if (!followerId) {
-      return res.send({
+      return res.status(400).send({
         status: 'failed',
         message: 'ID parameter required!'
       })
@@ -80,7 +80,7 @@ exports.getFollowedFeeds = async (req, res) => {
     })
 
     if (!userIsExists) {
-      return res.send({
+      return res.status(404).send({
         status: 'failed',
         message: `User with ID: ${followerId} is Not Found`
       })
@@ -125,7 +125,7 @@ exports.getFollowedFeeds = async (req, res) => {
     })
   } catch (e) {
     console.log(e)
-    res.status({
+    res.status(500).send({
       status: "failed",
       message: "Server Error"
     })
@@ -165,7 +165,7 @@ exports.getFeeds = async (req, res) => {
 
   } catch (e) {
     console.log(e)
-    res.status({
+    res.status(500).send({
       status: "failed",
       message: "Server Error"
     })
@@ -178,9 +178,9 @@ exports.addLike = async (req, res) => {
     const { idUser: userId } = req.authData
 
     if (!feedId) {
-      return res.send({
+      return res.status(400).send({
         status: 'failed',
-        message: 'ID parameter required!'
+        message: 'Feed ID required!'
       })
     }
 
@@ -189,7 +189,7 @@ exports.addLike = async (req, res) => {
     })
 
     if (!feedIsExists) {
-      return res.send({
+      return res.status(404).send({
         status: 'failed',
         message: `Feed with ID: ${feedId} is Not Found`
       })
@@ -234,7 +234,7 @@ exports.addLike = async (req, res) => {
     }
   } catch (e) {
     console.log(e)
-    res.status({
+    res.status(500).send({
       status: "failed",
       message: "Server Error"
     })
@@ -247,7 +247,7 @@ exports.getComments = async (req, res) => {
     const { idUser: userId } = req.authData
 
     if (!feedId) {
-      return res.send({
+      return res.status(400).send({
         status: 'failed',
         message: 'ID parameter required!'
       })
@@ -258,7 +258,7 @@ exports.getComments = async (req, res) => {
     })
 
     if (!feedIsExist) {
-      return res.send({
+      return res.status(404).send({
         status: 'failed',
         message: `Feed with ID: ${feedId} is Not Found`
       })
@@ -284,10 +284,9 @@ exports.getComments = async (req, res) => {
         comments
       }
     })
-
   } catch (e) {
     console.log(e)
-    res.status({
+    res.status(500).send({
       status: "failed",
       message: "Server Error"
     })
@@ -307,7 +306,7 @@ exports.addComment = async (req, res) => {
     const { error } = schema.validate(body)
 
     if (error) {
-      return res.send({
+      return res.status(422).send({
         status: 'invalid',
         message: error.details[0].message
       })
@@ -318,7 +317,7 @@ exports.addComment = async (req, res) => {
     })
 
     if (!feedIsExists) {
-      return res.send({
+      return res.status(404).send({
         status: 'failed',
         message: `Feed with ID: ${body.id_feed} is Not Found`
       })
@@ -340,7 +339,7 @@ exports.addComment = async (req, res) => {
     })
   } catch (e) {
     console.log(e)
-    res.status({
+    res.status(500).send({
       status: "failed",
       message: "Server Error"
     })

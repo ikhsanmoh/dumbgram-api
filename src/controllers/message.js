@@ -10,18 +10,17 @@ exports.addMessage = async (req, res) => {
   try {
     const receiverId = +req.params.id
     const { body } = req
-    // const { message } = req.body
     const { idUser: userId } = req.authData
 
     if (!receiverId) {
-      return res.send({
+      return res.status(400).send({
         status: 'failed',
         message: 'ID parameter is required!'
       })
     }
 
     if (userId == receiverId) {
-      return res.send({
+      return res.status(400).send({
         status: 'failed',
         message: 'Invalid User ID!'
       })
@@ -34,7 +33,7 @@ exports.addMessage = async (req, res) => {
     const { error } = schema.validate(body)
 
     if (error) {
-      return res.send({
+      return res.status(422).send({
         status: 'invalid',
         message: error.details[0].message
       })
@@ -45,7 +44,7 @@ exports.addMessage = async (req, res) => {
     })
 
     if (!userIsExists) {
-      return res.send({
+      return res.status(404).send({
         status: 'failed',
         message: `User/Receiver with ID: ${receiverId} is Not Found`
       })
@@ -80,7 +79,7 @@ exports.addMessage = async (req, res) => {
     })
   } catch (e) {
     console.log(e)
-    res.status({
+    res.status(500).send({
       status: "failed",
       message: "Server Error"
     })
@@ -93,9 +92,16 @@ exports.getMessages = async (req, res) => {
     const { idUser: userId } = req.authData
 
     if (!receiverId) {
-      return res.send({
+      return res.status(400).send({
         status: 'failed',
         message: 'ID parameter is required!'
+      })
+    }
+
+    if (userId == receiverId) {
+      return res.status(400).send({
+        status: 'failed',
+        message: 'Invalid User ID!'
       })
     }
 
@@ -104,16 +110,9 @@ exports.getMessages = async (req, res) => {
     })
 
     if (!userIsExists) {
-      return res.send({
+      return res.status(404).send({
         status: 'failed',
         message: `User/Receiver with ID: ${receiverId} is Not Found`
-      })
-    }
-
-    if (userId == receiverId) {
-      return res.send({
-        status: 'failed',
-        message: 'Invalid User ID!'
       })
     }
 
@@ -152,7 +151,7 @@ exports.getMessages = async (req, res) => {
 
   } catch (e) {
     console.log(e)
-    res.status({
+    res.status(500).send({
       status: "failed",
       message: "Server Error"
     })

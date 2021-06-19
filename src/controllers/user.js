@@ -2,21 +2,21 @@ const { user: User, follower: Follower } = require('../../models')
 
 exports.getUsers = async (req, res) => {
   try {
-    User.findAll({
+    const users = await User.findAll({
       attributes: {
         exclude: ['password', 'createdAt', 'updatedAt']
       }
-    }).then(users => {
-      res.send({
-        status: 'success',
-        data: {
-          users
-        }
-      })
+    })
+
+    res.send({
+      status: 'success',
+      data: {
+        users
+      }
     })
   } catch (e) {
     console.log(e)
-    res.status({
+    res.status(500).send({
       status: "failed",
       message: "Server Error"
     })
@@ -29,7 +29,7 @@ exports.updateUser = async (req, res) => {
     const { body } = req
 
     if (!id) {
-      return res.send({
+      return res.status(400).send({
         status: 'failed',
         message: 'ID parameter cannot be empty!'
       })
@@ -40,33 +40,32 @@ exports.updateUser = async (req, res) => {
     })
 
     if (!userIsExists) {
-      return res.send({
+      return res.status(404).send({
         status: 'failed',
         message: `User with ID: ${id} is Not Found`
       })
     }
 
-    User.update(body, {
+    await User.update(body, {
       where: { id }
-    }).then(() => {
-      User.findOne({
-        attributes: {
-          exclude: ['password', 'createdAt', 'updatedAt']
-        },
-        where: { id }
-      }).then(result => {
-        res.send({
-          status: 'success',
-          data: {
-            user: result
-          }
-        })
-      })
     })
 
+    const updatedUser = await User.findOne({
+      where: { id },
+      attributes: {
+        exclude: ['password', 'createdAt', 'updatedAt']
+      }
+    })
+
+    res.send({
+      status: 'success',
+      data: {
+        user: updatedUser
+      }
+    })
   } catch (e) {
     console.log(e)
-    res.status({
+    res.status(500).send({
       status: "failed",
       message: "Server Error"
     })
@@ -78,7 +77,7 @@ exports.deleteUser = async (req, res) => {
     const id = +req.params.id
 
     if (!id) {
-      return res.send({
+      return res.status(400).send({
         status: 'failed',
         message: 'ID parameter cannot be empty!'
       })
@@ -89,7 +88,7 @@ exports.deleteUser = async (req, res) => {
     })
 
     if (!userIsExists) {
-      return res.send({
+      return res.status(404).send({
         status: 'failed',
         message: `User with ID: ${id} is Not Found`
       })
@@ -105,7 +104,7 @@ exports.deleteUser = async (req, res) => {
     })
   } catch (e) {
     console.log(e)
-    res.status({
+    res.status(500).send({
       status: "failed",
       message: "Server Error"
     })
@@ -117,7 +116,7 @@ exports.getFollowers = async (req, res) => {
     const id = +req.params.id
 
     if (!id) {
-      return res.send({
+      return res.status(400).send({
         status: 'failed',
         message: 'ID parameter cannot be empty!'
       })
@@ -128,13 +127,12 @@ exports.getFollowers = async (req, res) => {
     })
 
     if (!userIsExists) {
-      return res.send({
+      return res.status(404).send({
         status: 'failed',
         message: `User with ID: ${id} is Not Found`
       })
     }
 
-    // Get the user Follower by given Id
     const followers = await Follower.findAll({
       where: { followedId: id },
       include: {
@@ -156,7 +154,7 @@ exports.getFollowers = async (req, res) => {
     })
   } catch (e) {
     console.log(e)
-    res.status({
+    res.status(500).send({
       status: "failed",
       message: "Server Error"
     })
@@ -168,7 +166,7 @@ exports.getFollowing = async (req, res) => {
     const id = +req.params.id
 
     if (!id) {
-      return res.send({
+      return res.status(400).send({
         status: 'failed',
         message: 'ID parameter cannot be empty!'
       })
@@ -179,13 +177,12 @@ exports.getFollowing = async (req, res) => {
     })
 
     if (!userIsExists) {
-      return res.send({
+      return res.status(404).send({
         status: 'failed',
         message: `User with ID: ${id} is Not Found`
       })
     }
 
-    // Get the followed users by given Id
     const following = await Follower.findAll({
       where: { followerId: id },
       include: {
@@ -208,7 +205,7 @@ exports.getFollowing = async (req, res) => {
     })
   } catch (e) {
     console.log(e)
-    res.status({
+    res.status(500).send({
       status: "failed",
       message: "Server Error"
     })
