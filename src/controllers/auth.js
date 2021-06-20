@@ -134,3 +134,41 @@ exports.login = async (req, res) => {
     })
   }
 }
+
+exports.checkAuth = async (req, res) => {
+  try {
+    const { idUser } = req.authData
+
+    const user = await User.findOne({
+      where: {
+        id: idUser
+      },
+      attributes: {
+        exclude: ['createdAt', 'updatedAt', 'password']
+      }
+    })
+
+    if (!user) {
+      return res.status(404).send({
+        status: 'failed'
+      })
+    }
+
+    res.send({
+      status: 'success',
+      data: {
+        user: {
+          username: user.username,
+          email: user.email
+        }
+      }
+    })
+
+  } catch (error) {
+    console.log(error)
+    res.status({
+      status: 'failed',
+      message: 'Server Error',
+    })
+  }
+}

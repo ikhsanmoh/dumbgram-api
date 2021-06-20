@@ -5,6 +5,8 @@ exports.auth = (req, res, next) => {
     const authHeader = req.header('Authorization')
     const token = authHeader && authHeader.split(' ')[1]
 
+    console.log(authHeader, token);
+
     if (token == null) {
       return res.status(401).send({
         status: 'failed',

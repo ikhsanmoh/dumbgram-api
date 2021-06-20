@@ -5,7 +5,8 @@ const router = express.Router()
 // Auth Controller
 const {
   registration,
-  login
+  login,
+  checkAuth
 } = require('../controllers/auth')
 
 // User Controller
@@ -36,6 +37,7 @@ const { auth } = require('../middleware/auth')
 // Auth Endpoint
 router.post('/register', registration)
 router.post('/login', login)
+router.get("/check-auth", auth, checkAuth);
 
 // User Endpoint
 router.get('/users', getUsers)
