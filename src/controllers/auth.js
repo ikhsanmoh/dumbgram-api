@@ -119,6 +119,7 @@ exports.login = async (req, res) => {
       status: 'success',
       data: {
         user: {
+          id: emailValidation.id,
           fullName: emailValidation.fullName,
           username: emailValidation.username,
           email: emailValidation.email,
@@ -158,8 +159,8 @@ exports.checkAuth = async (req, res) => {
       status: 'success',
       data: {
         user: {
-          username: user.username,
-          email: user.email
+          id: idUser,
+          ...user
         }
       }
     })
