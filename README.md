@@ -16,6 +16,7 @@
 ## Teknologi
 Projek ini dibangun dengan menggunakan :
 * Node
+* Express
 * ES6
 * MYSQL 5
 * PHP 7.4
