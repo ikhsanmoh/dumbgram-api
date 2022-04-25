@@ -1,5 +1,5 @@
 # Dumbgram Api's Collection
-This repo contain backend of dumbgram project.
+This repo contain api collection for dumbgram project.
 
 ## Installation
 - Install dependecies
