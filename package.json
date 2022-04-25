@@ -5,13 +5,13 @@
   "main": "server.js",
   "scripts": {
     "start": "nodemon server.js",
-    "client": "npm start --prefix ../client",
+    "client": "npm start --prefix ../fe_dumbgram",
     "dev": "concurrently \"npm start\" \"npm run client\""
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bcrypt": "^5.0.1",
+    "bcryptjs": "^2.4.3",
     "concurrently": "^6.2.0",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
